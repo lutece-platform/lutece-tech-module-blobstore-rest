@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <properties>
+        <title>Introduction</title>
+    </properties>
+    <body>
+        <section name="Descriptif du plugin">
+            <subsection name="Introduction">
+                <p>
+                	Ce module permet de manipuler des donn&#233;es, sous forme de web services REST,
+	            	des fichiers du plugin BlobStore.
+                </p>
+            </subsection>
+        </section>
+    </body>
+</document>

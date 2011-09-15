@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <properties>
+        <title>Introduction</title>
+    </properties>
+    <body>
+        <section name="Plugin's description">
+            <subsection name="Introduction">
+                <p>
+                	This module handles file data, in WebService REST, of the plugin BlobStore
+                </p>
+            </subsection>
+        </section>
+    </body>
+</document>

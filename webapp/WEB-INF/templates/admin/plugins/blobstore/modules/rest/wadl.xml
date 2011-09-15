@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <resources base="${base_url}">
+        <resource path="create">
+            <method name="POST" >
+                <request>
+                    <representation mediaType="multipart/form-data">
+                        <param name="blobstore" type="xsd:string" style="query" required="true"/>
+                        <param name="blob" type="xsd:string" style="query" required="true"/>
+                    </representation>
+                </request>
+            </method>
+        </resource>
+        <resource path="delete">
+            <method name="POST" >
+                <request>
+                    <representation mediaType="application/x-www-form-urlencoded">
+                        <param name="blob_key" type="xsd:string" style="query" required="true"/>
+                        <param name="blobstore" type="xsd:string" style="query" required="true"/>
+                    </representation>
+                </request>
+            </method>
+        </resource>
+    </resources>
+</application>
+
