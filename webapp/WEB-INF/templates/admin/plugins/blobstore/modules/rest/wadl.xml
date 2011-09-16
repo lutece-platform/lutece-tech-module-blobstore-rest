@@ -3,6 +3,13 @@
 xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd"
 xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     <resources base="${base_url}">
+    	<resource path="{blobstore}/{blob_key}">
+            <method name="GET" >
+                <response>
+                    <representation mediaType="text/plain"/>
+                </response>
+            </method>
+        </resource>
         <resource path="create">
             <method name="POST" >
                 <request>

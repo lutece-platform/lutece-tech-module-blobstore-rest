@@ -48,6 +48,7 @@ public final class BlobStoreRestConstants
     public static final String PATH_WADL = "wadl";
     public static final String PATH_DELETE_BLOBSTORE = "delete";
     public static final String PATH_CREATE_BLOBSTORE = "create";
+    public static final String PATH_FILE_URL = "{blobstore}/{blob_key}";
 
     // PARAMETERS
     public static final String PARAMETER_BLOB_KEY = "blob_key";

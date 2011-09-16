@@ -38,6 +38,7 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import fr.paris.lutece.plugins.blobstore.modules.rest.util.constants.BlobStoreRestConstants;
 import fr.paris.lutece.plugins.blobstore.service.BlobStorePlugin;
 import fr.paris.lutece.plugins.rest.service.RestConstants;
+import fr.paris.lutece.portal.service.blobstore.BlobStoreFileItem;
 import fr.paris.lutece.portal.service.blobstore.BlobStoreService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
@@ -45,6 +46,7 @@ import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.util.html.HtmlTemplate;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -63,6 +65,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -103,6 +106,52 @@ public class BlobStoreRest
                 model );
 
         return t.getHtml(  );
+    }
+
+    /**
+     * Get the file url
+     * @param strBlobStore the blobstore
+     * @param strBlobKey the blob key
+     * @return the file url
+     */
+    @GET
+    @Path( BlobStoreRestConstants.PATH_FILE_URL )
+    @Produces( MediaType.TEXT_PLAIN )
+    public String getFileUrl( @PathParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE )
+    String strBlobStore, @PathParam( BlobStoreRestConstants.PARAMETER_BLOB_KEY )
+    String strBlobKey )
+    {
+        String strDownloadUrl = StringUtils.EMPTY;
+
+        if ( StringUtils.isNotBlank( strBlobStore ) && StringUtils.isNotBlank( strBlobKey ) )
+        {
+            BlobStoreService blobStoreService;
+
+            try
+            {
+                blobStoreService = (BlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
+                        strBlobStore );
+                strDownloadUrl = blobStoreService.getFileUrl( strBlobKey );
+            }
+            catch ( BeanDefinitionStoreException e )
+            {
+                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
+            }
+            catch ( NoSuchBeanDefinitionException e )
+            {
+                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
+            }
+            catch ( CannotLoadBeanClassException e )
+            {
+                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
+            }
+        }
+        else
+        {
+            AppLogService.error( BlobStoreRestConstants.MESSAGE_MANDATORY_FIELDS );
+        }
+
+        return strDownloadUrl;
     }
 
     /**
@@ -169,7 +218,7 @@ public class BlobStoreRest
     InputStream blob, @FormParam( BlobStoreRestConstants.PARAMETER_BLOB )
     FormDataContentDisposition blobDetail )
     {
-        String strResponse = StringUtils.EMPTY;
+        String strBlobKey = StringUtils.EMPTY;
 
         if ( StringUtils.isNotBlank( strBlobStore ) && ( blob != null ) )
         {
@@ -179,18 +228,31 @@ public class BlobStoreRest
             {
                 blobStoreService = (BlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
                         strBlobStore );
-                strResponse = blobStoreService.storeInputStream( blob );
+                strBlobKey = blobStoreService.storeInputStream( blob );
+
+                String strJSON = BlobStoreFileItem.buildFileMetadata( blobDetail.getFileName(  ),
+                        blobDetail.getSize(  ), strBlobKey, blobDetail.getType(  ) );
+
+                if ( AppLogService.isDebugEnabled(  ) )
+                {
+                    AppLogService.debug( "Storing " + blobDetail.getName(  ) + " with : " + strJSON );
+                }
+
+                strBlobKey = blobStoreService.store( strJSON.getBytes(  ) );
             }
             catch ( BeanDefinitionStoreException e )
             {
+                IOUtils.closeQuietly( blob );
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
             catch ( NoSuchBeanDefinitionException e )
             {
+                IOUtils.closeQuietly( blob );
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
             catch ( CannotLoadBeanClassException e )
             {
+                IOUtils.closeQuietly( blob );
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
         }
@@ -199,6 +261,6 @@ public class BlobStoreRest
             AppLogService.error( BlobStoreRestConstants.MESSAGE_MANDATORY_FIELDS );
         }
 
-        return strResponse;
+        return strBlobKey;
     }
 }

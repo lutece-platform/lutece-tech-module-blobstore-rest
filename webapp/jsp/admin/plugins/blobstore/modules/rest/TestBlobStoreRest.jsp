@@ -5,6 +5,13 @@
         <title>BlobStore - REST webservices test page</title>
         <base href="<%= AppPathService.getBaseUrl( request ) %>" />
         <link rel="stylesheet" type="text/css" href="css/portal_admin.css" title="lutece_admin" />
+        <script type="text/javascript">
+            function onFileUrlView(  ) {
+                var blobKey = document.formGetFileUrl.blob_key.value;
+                var blobStore = document.formGetFileUrl.blobstore.value;
+                document.location= 'rest/blobstore/' + blobStore + '/' + blobKey;
+            }
+        </script>
     </head>
     <body>
         <div id="content" >
@@ -15,6 +22,19 @@
 	                <form action="rest/blobstore/wadl">
 	                    <br/>
 	                    <input class="button" type="submit" value="View WADL" />
+	                </form>
+	            </div>
+	            
+	            <div class="highlight-box">
+	                <h2>View blob URL</h2>
+	                <form name="formGetFileUrl">
+	                    <label for="blob_key">Blob Key * : </label>
+	                    <input type="text" name="blob_key" />
+	                    <br />
+	                    <label for="blobstore">BlobStore * : </label>
+	                    <input type="text" name="blobstore" />
+	                    <br />
+	                    <input class="button" type="button" value="View" onclick="javascript:onFileUrlView(  )"/>
 	                </form>
 	            </div>
 	            

@@ -27,7 +27,7 @@
 
            <init-param>
                <param-name>elementsSignature</param-name>
-               <param-value>blob_key</param-value>
+               <param-value>blob_key,blobstore</param-value>
            </init-param>
 
            <init-param>
