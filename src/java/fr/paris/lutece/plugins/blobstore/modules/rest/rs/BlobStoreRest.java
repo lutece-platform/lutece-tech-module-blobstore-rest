@@ -40,6 +40,7 @@ import fr.paris.lutece.plugins.blobstore.service.BlobStorePlugin;
 import fr.paris.lutece.plugins.rest.service.RestConstants;
 import fr.paris.lutece.portal.service.blobstore.BlobStoreFileItem;
 import fr.paris.lutece.portal.service.blobstore.BlobStoreService;
+import fr.paris.lutece.portal.service.blobstore.NoSuchBlobException;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
@@ -180,7 +181,9 @@ public class BlobStoreRest
             {
                 blobStoreService = (BlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
                         strBlobStore );
-                blobStoreService.delete( strBlobKey );
+
+                BlobStoreFileItem fileItem = new BlobStoreFileItem( strBlobKey, blobStoreService );
+                fileItem.delete(  );
             }
             catch ( BeanDefinitionStoreException e )
             {
@@ -191,6 +194,10 @@ public class BlobStoreRest
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
             catch ( CannotLoadBeanClassException e )
+            {
+                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
+            }
+            catch ( NoSuchBlobException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
