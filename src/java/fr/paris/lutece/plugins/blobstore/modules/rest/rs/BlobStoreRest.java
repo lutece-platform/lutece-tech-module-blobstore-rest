@@ -249,18 +249,19 @@ public class BlobStoreRest
             }
             catch ( BeanDefinitionStoreException e )
             {
-                IOUtils.closeQuietly( blob );
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
             catch ( NoSuchBeanDefinitionException e )
             {
-                IOUtils.closeQuietly( blob );
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
             catch ( CannotLoadBeanClassException e )
             {
-                IOUtils.closeQuietly( blob );
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
+            }
+            finally
+            {
+                IOUtils.closeQuietly( blob );
             }
         }
         else
