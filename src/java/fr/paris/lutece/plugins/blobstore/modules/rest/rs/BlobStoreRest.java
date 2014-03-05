@@ -33,34 +33,11 @@
  */
 package fr.paris.lutece.plugins.blobstore.modules.rest.rs;
 
-import com.sun.jersey.core.header.FormDataContentDisposition;
-
-import fr.paris.lutece.plugins.blobstore.modules.rest.util.constants.BlobStoreRestConstants;
-import fr.paris.lutece.plugins.blobstore.service.BlobStorePlugin;
-import fr.paris.lutece.plugins.rest.service.RestConstants;
-import fr.paris.lutece.portal.service.blobstore.BlobStoreFileItem;
-import fr.paris.lutece.portal.service.blobstore.BlobStoreService;
-import fr.paris.lutece.portal.service.blobstore.NoSuchBlobException;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
-import fr.paris.lutece.portal.service.template.AppTemplateService;
-import fr.paris.lutece.portal.service.util.AppLogService;
-import fr.paris.lutece.portal.service.util.AppPathService;
-import fr.paris.lutece.util.html.HtmlTemplate;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-
-import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.CannotLoadBeanClassException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-
 import java.io.InputStream;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -71,11 +48,31 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.CannotLoadBeanClassException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+
+import com.sun.jersey.core.header.FormDataContentDisposition;
+
+import fr.paris.lutece.plugins.blobstore.modules.rest.util.constants.BlobStoreRestConstants;
+import fr.paris.lutece.plugins.blobstore.service.BlobStoreFileItem;
+import fr.paris.lutece.plugins.blobstore.service.BlobStorePlugin;
+import fr.paris.lutece.plugins.blobstore.service.IBlobStoreService;
+import fr.paris.lutece.plugins.blobstore.service.NoSuchBlobException;
+import fr.paris.lutece.plugins.rest.service.RestConstants;
+import fr.paris.lutece.portal.service.spring.SpringContextService;
+import fr.paris.lutece.portal.service.template.AppTemplateService;
+import fr.paris.lutece.portal.service.util.AppLogService;
+import fr.paris.lutece.portal.service.util.AppPathService;
+import fr.paris.lutece.util.html.HtmlTemplate;
+
 
 /**
- *
+ * 
  * BlobStoreRest
- *
+ * 
  */
 @Path( RestConstants.BASE_PATH + BlobStorePlugin.PLUGIN_NAME )
 public class BlobStoreRest
@@ -88,25 +85,24 @@ public class BlobStoreRest
     @GET
     @Path( BlobStoreRestConstants.PATH_WADL )
     @Produces( MediaType.APPLICATION_XML )
-    public String getWADL( @Context
-    HttpServletRequest request )
+    public String getWADL( @Context HttpServletRequest request )
     {
         StringBuilder sbBase = new StringBuilder( AppPathService.getBaseUrl( request ) );
 
-        if ( sbBase.toString(  ).endsWith( BlobStoreRestConstants.SLASH ) )
+        if ( sbBase.toString( ).endsWith( BlobStoreRestConstants.SLASH ) )
         {
-            sbBase.deleteCharAt( sbBase.length(  ) - 1 );
+            sbBase.deleteCharAt( sbBase.length( ) - 1 );
         }
 
         sbBase.append( RestConstants.BASE_PATH + BlobStorePlugin.PLUGIN_NAME );
 
-        Map<String, Object> model = new HashMap<String, Object>(  );
-        model.put( BlobStoreRestConstants.MARK_BASE_URL, sbBase.toString(  ) );
+        Map<String, Object> model = new HashMap<String, Object>( );
+        model.put( BlobStoreRestConstants.MARK_BASE_URL, sbBase.toString( ) );
 
-        HtmlTemplate t = AppTemplateService.getTemplate( BlobStoreRestConstants.TEMPLATE_WADL, request.getLocale(  ),
+        HtmlTemplate t = AppTemplateService.getTemplate( BlobStoreRestConstants.TEMPLATE_WADL, request.getLocale( ),
                 model );
 
-        return t.getHtml(  );
+        return t.getHtml( );
     }
 
     /**
@@ -118,19 +114,18 @@ public class BlobStoreRest
     @GET
     @Path( BlobStoreRestConstants.PATH_FILE_URL )
     @Produces( MediaType.TEXT_PLAIN )
-    public String getFileUrl( @PathParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE )
-    String strBlobStore, @PathParam( BlobStoreRestConstants.PARAMETER_BLOB_KEY )
-    String strBlobKey )
+    public String getFileUrl( @PathParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE ) String strBlobStore,
+            @PathParam( BlobStoreRestConstants.PARAMETER_BLOB_KEY ) String strBlobKey )
     {
         String strDownloadUrl = StringUtils.EMPTY;
 
         if ( StringUtils.isNotBlank( strBlobStore ) && StringUtils.isNotBlank( strBlobKey ) )
         {
-            BlobStoreService blobStoreService;
+            IBlobStoreService blobStoreService;
 
             try
             {
-                blobStoreService = (BlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
+                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
                         strBlobStore );
                 strDownloadUrl = blobStoreService.getFileUrl( strBlobKey );
             }
@@ -165,9 +160,8 @@ public class BlobStoreRest
     @Path( BlobStoreRestConstants.PATH_DELETE_BLOBSTORE )
     @Produces( MediaType.TEXT_HTML )
     @Consumes( MediaType.APPLICATION_FORM_URLENCODED )
-    public String doDeleteBlobStore( @FormParam( BlobStoreRestConstants.PARAMETER_BLOB_KEY )
-    String strBlobKey, @FormParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE )
-    String strBlobStore )
+    public String doDeleteBlobStore( @FormParam( BlobStoreRestConstants.PARAMETER_BLOB_KEY ) String strBlobKey,
+            @FormParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE ) String strBlobStore )
     {
         String strResponse = StringUtils.EMPTY;
 
@@ -175,15 +169,15 @@ public class BlobStoreRest
         {
             strResponse = strBlobKey;
 
-            BlobStoreService blobStoreService;
+            IBlobStoreService blobStoreService;
 
             try
             {
-                blobStoreService = (BlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
+                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
                         strBlobStore );
 
                 BlobStoreFileItem fileItem = new BlobStoreFileItem( strBlobKey, blobStoreService );
-                fileItem.delete(  );
+                fileItem.delete( );
             }
             catch ( BeanDefinitionStoreException e )
             {
@@ -220,32 +214,31 @@ public class BlobStoreRest
     @POST
     @Path( BlobStoreRestConstants.PATH_CREATE_BLOBSTORE )
     @Consumes( MediaType.MULTIPART_FORM_DATA )
-    public String doCreateBlobStore( @FormParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE )
-    String strBlobStore, @FormParam( BlobStoreRestConstants.PARAMETER_BLOB )
-    InputStream blob, @FormParam( BlobStoreRestConstants.PARAMETER_BLOB )
-    FormDataContentDisposition blobDetail )
+    public String doCreateBlobStore( @FormParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE ) String strBlobStore,
+            @FormParam( BlobStoreRestConstants.PARAMETER_BLOB ) InputStream blob,
+            @FormParam( BlobStoreRestConstants.PARAMETER_BLOB ) FormDataContentDisposition blobDetail )
     {
         String strBlobKey = StringUtils.EMPTY;
 
         if ( StringUtils.isNotBlank( strBlobStore ) && ( blob != null ) )
         {
-            BlobStoreService blobStoreService;
+            IBlobStoreService blobStoreService;
 
             try
             {
-                blobStoreService = (BlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
+                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
                         strBlobStore );
                 strBlobKey = blobStoreService.storeInputStream( blob );
 
-                String strJSON = BlobStoreFileItem.buildFileMetadata( blobDetail.getFileName(  ),
-                        blobDetail.getSize(  ), strBlobKey, blobDetail.getType(  ) );
+                String strJSON = BlobStoreFileItem.buildFileMetadata( blobDetail.getFileName( ), blobDetail.getSize( ),
+                        strBlobKey, blobDetail.getType( ) );
 
-                if ( AppLogService.isDebugEnabled(  ) )
+                if ( AppLogService.isDebugEnabled( ) )
                 {
-                    AppLogService.debug( "Storing " + blobDetail.getName(  ) + " with : " + strJSON );
+                    AppLogService.debug( "Storing " + blobDetail.getName( ) + " with : " + strJSON );
                 }
 
-                strBlobKey = blobStoreService.store( strJSON.getBytes(  ) );
+                strBlobKey = blobStoreService.store( strJSON.getBytes( ) );
             }
             catch ( BeanDefinitionStoreException e )
             {
