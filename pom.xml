@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<parent>
-		<artifactId>lutece-plugins-pom</artifactId>
-		<groupId>fr.paris.lutece.plugins</groupId>
-		<version>3.7</version>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>fr.paris.lutece.plugins</groupId>
-	<artifactId>module-blobstore-rest</artifactId>
-	<packaging>lutece-plugin</packaging>
-	<version>2.0.1-SNAPSHOT</version>
-	<name>Lutece blobstore rest module</name>
-	<repositories>
+    <parent>
+        <artifactId>lutece-global-pom</artifactId>
+        <groupId>fr.paris.lutece.tools</groupId>
+        <version>3.0.12</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.paris.lutece.plugins</groupId>
+    <artifactId>module-blobstore-rest</artifactId>
+    <packaging>lutece-plugin</packaging>
+    <version>2.0.1-SNAPSHOT</version>
+    <name>Lutece blobstore rest module</name>
+    <repositories>
         <repository>
             <id>luteceSnapshot</id>
             <name>luteceSnapshot</name>
@@ -28,31 +28,28 @@
             </snapshots>
         </repository>
     </repositories>
-	
-	<dependencies>
-		<dependency>
-			<groupId>fr.paris.lutece.plugins</groupId>
-			<artifactId>plugin-blobstore</artifactId>
-			<version>[2.0.0-SNAPSHOT,)</version>
-			<type>lutece-plugin</type>
-		</dependency>
-		<dependency>
+    <dependencies>
+        <dependency>
+            <groupId>fr.paris.lutece.plugins</groupId>
+            <artifactId>plugin-blobstore</artifactId>
+            <version>[2.0.0-SNAPSHOT,)</version>
+            <type>lutece-plugin</type>
+        </dependency>
+        <dependency>
             <groupId>fr.paris.lutece.plugins</groupId>
             <artifactId>plugin-rest</artifactId>
             <version>[1.0.0,)</version>
             <type>lutece-plugin</type>
         </dependency>
-	</dependencies>
-	
-	<properties>
-		<componentName>blobstore-rest</componentName>
-		<jiraProjectName>BLOBSTOREREST</jiraProjectName>
-		<jiraComponentId>10592</jiraComponentId>
-	</properties>
-	
+    </dependencies>
+    <properties>
+        <componentName>blobstore-rest</componentName>
+        <jiraProjectName>BLOBSTOREREST</jiraProjectName>
+        <jiraComponentId>10592</jiraComponentId>
+    </properties>
     <scm>
-        <connection>scm:svn:http://dev.lutece.paris.fr/svn/lutece/portal/trunk/plugins/technical/module-blobstore-rest</connection>
-        <developerConnection>scm:svn:https://dev.lutece.paris.fr/svn/lutece/portal/trunk/plugins/technical/module-blobstore-rest</developerConnection>
-        <url>http://dev.lutece.paris.fr/viewvc/lutece/portal/trunk/plugins/technical/module-blobstore-rest</url>
+        <connection>scm:git:https://github.com/lutece-platform/lutece-tech-module-blobstore-rest.git</connection>
+        <developerConnection>scm:git:https://github.com/lutece-platform/lutece-tech-module-blobstore-rest.git</developerConnection>
+        <url>https://github.com/lutece-platform/lutece-tech-module-blobstore-rest.git</url>
     </scm>
 </project>
