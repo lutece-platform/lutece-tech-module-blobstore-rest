@@ -8,7 +8,7 @@
     <groupId>fr.paris.lutece.plugins</groupId>
     <artifactId>module-blobstore-rest</artifactId>
     <packaging>lutece-plugin</packaging>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>2.0.1</version>
     <name>Lutece blobstore rest module</name>
     <repositories>
         <repository>
@@ -51,5 +51,6 @@
         <connection>scm:git:https://github.com/lutece-platform/lutece-tech-module-blobstore-rest.git</connection>
         <developerConnection>scm:git:https://github.com/lutece-platform/lutece-tech-module-blobstore-rest.git</developerConnection>
         <url>https://github.com/lutece-platform/lutece-tech-module-blobstore-rest.git</url>
-    </scm>
+      <tag>lutece-tech-module-blobstore-rest-2.0.1</tag>
+  </scm>
 </project>
