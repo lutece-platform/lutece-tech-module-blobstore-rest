@@ -3,15 +3,15 @@
 [![Line of code](https://dev.lutece.paris.fr/sonar/api/project_badges/measure?project=fr.paris.lutece.plugins%3Amodule-blobstore-rest&metric=ncloc)](https://dev.lutece.paris.fr/sonar/dashboard?id=fr.paris.lutece.plugins%3Amodule-blobstore-rest)
 [![Coverage](https://dev.lutece.paris.fr/sonar/api/project_badges/measure?project=fr.paris.lutece.plugins%3Amodule-blobstore-rest&metric=coverage)](https://dev.lutece.paris.fr/sonar/dashboard?id=fr.paris.lutece.plugins%3Amodule-blobstore-rest)
 
-# Plugin's description
+# Descriptif du plugin
 
 ## Introduction
 
-This module handles file data, in WebService REST, of the plugin BlobStore
+Ce module permet de manipuler des données, sous forme de web services REST, des fichiers du plugin BlobStore.
 
 ## Installation
 
-Configure the private keys for the signature in the file **blobstore-rest.xml** :
+Configurer les clés privées utilisées pour les signatures dans le fichier **blobstore-rest.xml** :
 
 ```
 
@@ -40,22 +40,22 @@ Configure the private keys for the signature in the file **blobstore-rest.xml** 
 
 ```
 
-## Usage - Test JSP
+## Usage - JSP de test
 
-There is a JSP that allow to run test on the module-blobstore-rest. It is accessible through the following link :
+Il existe une JSP permettant de faire des tests sur le module-blobstore-rest. Elle est accessible par l'URL suivante :
 
  **jsp/admin/plugins/blobstore/modules/rest/TestBlobStoreRest.jsp** 
 
- **Note :** To access to this JSP, one must be authenticated in the Back-Office. The filter tags must also be commented in the file blobstore-rest.xmlso the module won't use the security, otherwise, an HTTP 401 response will be returned.
+ **Note :** Pour accéderàcette JSP, il fautêtre authentifiédans le Back-Office. Il fautégalement commenter dans le fichier blobstore-rest.xml les filtres de façonàce qu'il n'utilise pas la sécurité, sinon une réponse HTTP 401 sera renvoyée.
 
-## URLs syntax
-Creation of a blob
-To create a blob, a form using the method **POST** and having an entype **multipart/form-data** and with the following parameters are needed :
+## Syntaxe des URLs
+Création d'un blob
+Pour créer un blob, il faut faire un formulaire de type **POST** , ayant un enctype **multipart/form-data** et avoir les paramètres suivants :
 
-| Parameter's name| Parameter's type| Description|
+| Nom du paramètre| Type du paramètre| Description du paramètre|
 |-----------------|-----------------|-----------------|
-| blobstore| text| Name of the BlobStore Service|
-| blob| file| File to upload|
+| blobstore| text| Correspond au nom du BlobStore Service|
+| blob| file| Correspond au fichieràuploader|
 
 
 ```
@@ -64,13 +64,13 @@ http://myhost/mywebapps/rest/blobstore/create
 
 ```
 
-Removeing a blob
-To remove a blob, a form using the method **POST** and with the following parameters are needed :
+Suppression d'un blob
+Pour supprimer un blob, il faut faire un formulaire de type **POST** et avoir les paramètres suivants :
 
-| Parameter's name| Parameter's type| Description|
+| Nom du paramètre| Type du paramètre| Description du paramètre|
 |-----------------|-----------------|-----------------|
-| blob_key| text| ID blob|
-| blobstore| text| Name of the BlobStore Service|
+| blob_key| text| Correspondàl'ID du blob|
+| blobstore| text| Correspond au nom du BlobStore Service|
 
 
 ```

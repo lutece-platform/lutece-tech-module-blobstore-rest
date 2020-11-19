@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2017, Mairie de Paris
+ * Copyright (c) 2002-2020, City of Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,6 @@ import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.util.html.HtmlTemplate;
 
-
 /**
  * 
  * BlobStoreRest
@@ -79,7 +78,9 @@ public class BlobStoreRest
 {
     /**
      * Get the wadl.xml content
-     * @param request {@link HttpServletRequest}
+     * 
+     * @param request
+     *            {@link HttpServletRequest}
      * @return the content of wadl.xml
      */
     @GET
@@ -99,16 +100,18 @@ public class BlobStoreRest
         Map<String, Object> model = new HashMap<String, Object>( );
         model.put( BlobStoreRestConstants.MARK_BASE_URL, sbBase.toString( ) );
 
-        HtmlTemplate t = AppTemplateService.getTemplate( BlobStoreRestConstants.TEMPLATE_WADL, request.getLocale( ),
-                model );
+        HtmlTemplate t = AppTemplateService.getTemplate( BlobStoreRestConstants.TEMPLATE_WADL, request.getLocale( ), model );
 
         return t.getHtml( );
     }
 
     /**
      * Get the file url
-     * @param strBlobStore the blobstore
-     * @param strBlobKey the blob key
+     * 
+     * @param strBlobStore
+     *            the blobstore
+     * @param strBlobKey
+     *            the blob key
      * @return the file url
      */
     @GET
@@ -125,19 +128,18 @@ public class BlobStoreRest
 
             try
             {
-                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
-                        strBlobStore );
+                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME, strBlobStore );
                 strDownloadUrl = blobStoreService.getFileUrl( strBlobKey );
             }
-            catch ( BeanDefinitionStoreException e )
+            catch( BeanDefinitionStoreException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
-            catch ( NoSuchBeanDefinitionException e )
+            catch( NoSuchBeanDefinitionException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
-            catch ( CannotLoadBeanClassException e )
+            catch( CannotLoadBeanClassException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
@@ -152,8 +154,11 @@ public class BlobStoreRest
 
     /**
      * Delete a blob
-     * @param strBlobKey the blob key
-     * @param strBlobStore the blobstore
+     * 
+     * @param strBlobKey
+     *            the blob key
+     * @param strBlobStore
+     *            the blobstore
      * @return the blob key
      */
     @POST
@@ -173,25 +178,24 @@ public class BlobStoreRest
 
             try
             {
-                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
-                        strBlobStore );
+                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME, strBlobStore );
 
                 BlobStoreFileItem fileItem = new BlobStoreFileItem( strBlobKey, blobStoreService );
                 fileItem.delete( );
             }
-            catch ( BeanDefinitionStoreException e )
+            catch( BeanDefinitionStoreException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
-            catch ( NoSuchBeanDefinitionException e )
+            catch( NoSuchBeanDefinitionException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
-            catch ( CannotLoadBeanClassException e )
+            catch( CannotLoadBeanClassException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
-            catch ( NoSuchBlobException e )
+            catch( NoSuchBlobException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
@@ -206,9 +210,13 @@ public class BlobStoreRest
 
     /**
      * Create a blob
-     * @param strBlobStore the the blobstore service
-     * @param blob the blob to create
-     * @param blobDetail the blob detail
+     * 
+     * @param strBlobStore
+     *            the the blobstore service
+     * @param blob
+     *            the blob to create
+     * @param blobDetail
+     *            the blob detail
      * @return the id of the newly created blob
      */
     @POST
@@ -226,12 +234,10 @@ public class BlobStoreRest
 
             try
             {
-                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME,
-                        strBlobStore );
+                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME, strBlobStore );
                 strBlobKey = blobStoreService.storeInputStream( blob );
 
-                String strJSON = BlobStoreFileItem.buildFileMetadata( blobDetail.getFileName( ), blobDetail.getSize( ),
-                        strBlobKey, blobDetail.getType( ) );
+                String strJSON = BlobStoreFileItem.buildFileMetadata( blobDetail.getFileName( ), blobDetail.getSize( ), strBlobKey, blobDetail.getType( ) );
 
                 if ( AppLogService.isDebugEnabled( ) )
                 {
@@ -240,15 +246,15 @@ public class BlobStoreRest
 
                 strBlobKey = blobStoreService.store( strJSON.getBytes( ) );
             }
-            catch ( BeanDefinitionStoreException e )
+            catch( BeanDefinitionStoreException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
-            catch ( NoSuchBeanDefinitionException e )
+            catch( NoSuchBeanDefinitionException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
-            catch ( CannotLoadBeanClassException e )
+            catch( CannotLoadBeanClassException e )
             {
                 AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
