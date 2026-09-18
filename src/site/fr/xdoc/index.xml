@@ -12,35 +12,55 @@
                 </p>
             </subsection>
             <subsection name="Installation">
-			<p>
-				Configurer les cl&#233;s priv&#233;es utilis&#233;es pour les signatures dans le fichier <strong>blobstore-rest.xml</strong> :     
+        	<p>
+        		Le module v&#233;rifie une signature sur ses propres points d'entr&#233;e. Renseigner la cl&#233; priv&#233;e dans
+        		<strong>webapp/WEB-INF/conf/plugins/blobstore-rest.properties</strong> :
 			</p>
 			<div class="source">
 <pre>
-&lt;filters&gt;
-	&lt;filter&gt;
-		&lt;filter-name&gt;CRMRestSecurity&lt;/filter-name&gt;
-		&lt;url-pattern&gt;/rest/blobstore/*&lt;/url-pattern&gt;
-		&lt;filter-class&gt;fr.paris.lutece.util.signrequest.servlet.HeaderHashRequestFilter&lt;/filter-class&gt;
-
-		&lt;init-param&gt;
-			&lt;param-name&gt;elementsSignature&lt;/param-name&gt;
-			&lt;param-value&gt;blob_key&lt;/param-value&gt;
-		&lt;/init-param&gt;
-
-		&lt;init-param&gt;
-			&lt;param-name&gt;validityTimePeriod&lt;/param-name&gt;
-			&lt;param-value&gt;0&lt;/param-value&gt;
-		&lt;/init-param&gt;
-
-		&lt;init-param&gt;
-			&lt;param-name&gt;privateKey&lt;/param-name&gt;
-			&lt;param-value&gt;<strong>change me</strong>&lt;/param-value&gt;
-		&lt;/init-param&gt;
-	&lt;/filter&gt;
-&lt;/filters&gt;
+blobstore-rest.requestAuthenticator.name=signrequest.HeaderHashAuthenticator
+blobstore-rest.requestAuthenticator.cfg.hashService=signrequest.Sha1HashService
+blobstore-rest.requestAuthenticator.cfg.signatureElements=blob_key,blobstore
+blobstore-rest.requestAuthenticator.cfg.privateKey=<strong>change me</strong>
 </pre>
 			</div>
+        	<p>
+        		Un client signe un appel avec deux en-t&#234;tes :
+			</p>
+			<div class="source">
+<pre>
+Lutece-Request-Timestamp: &lt;epoch en millisecondes&gt;
+Lutece-Request-Signature: sha1( &lt;valeur de blob_key&gt; + &lt;valeur de blobstore&gt; + &lt;cl&#233; priv&#233;e&gt; + &lt;timestamp&gt; )
+</pre>
+			</div>
+        	<p>
+        		La signature est en hexad&#233;cimal minuscule. Elle concat&#232;ne les <strong>valeurs</strong> des
+        		param&#232;tres de requ&#234;te nomm&#233;s par signatureElements, dans cet ordre, puis la cl&#233; priv&#233;e, puis le
+        		timestamp.
+			</p>
+        	<p>
+        		Seules comptent les valeurs transmises en <strong>param&#232;tres de requ&#234;te ou de formulaire</strong> :
+        		les segments de chemin ne comptent pas, et un param&#232;tre absent est omis de la concat&#233;nation.
+        		GET /rest/blobstore/{blobstore}/{blob_key} doit donc r&#233;p&#233;ter les deux en param&#232;tres de requ&#234;te,
+        		?blobstore=&lt;store&gt;&amp;blob_key=&lt;key&gt;, pour que la signature porte sur le fichier. Sans eux,
+        		et pour /wadl, elle se r&#233;duit &#224; sha1( &lt;cl&#233; priv&#233;e&gt; + &lt;timestamp&gt; ).
+			</p>
+        	<p>
+        		Sur un POST multipart/form-data, seules les valeurs envoy&#233;es en <strong>param&#232;tre de requ&#234;te</strong>
+        		comptent dans la signature ; une valeur envoy&#233;e uniquement en partie n'y entre jamais. L'envoyer en
+        		param&#232;tre de requ&#234;te, POST /rest/blobstore/create?blobstore=&lt;store&gt;, ce que fait
+        		plugin-blobstoreclient.
+			</p>
+        	<p>
+        		Le contr&#244;le se d&#233;sactive avec blobstore-rest.security.activated=false dans le m&#234;me fichier, ce qui
+        		sert <strong>tous</strong> les appels sans v&#233;rification, y compris les &#233;critures create et delete.
+        		Cette cl&#233; existe pour piloter la JSP de test en local ; la laisser &#224; true sinon.
+			</p>
+        	<p>
+        		Ind&#233;pendamment, plugin-rest propose un contr&#244;le global au site, rest.security.activated dans
+        		<strong>rest.properties</strong>, livr&#233; d&#233;sactiv&#233;. Il couvre <strong>toutes</strong> les
+        		ressources REST du site, pas seulement /rest/blobstore.
+			</p>
             </subsection>
             <subsection name="Usage - JSP de test">
                 <p>
@@ -52,9 +72,10 @@
                 </p>
                 <p>
                 	<strong>Note : </strong>Pour acc&#233;der &#224; cette JSP, il faut &#234;tre authentifi&#233;
-                	dans le Back-Office. Il faut &#233;galement commenter dans le fichier blobstore-rest.xml les filtres
-                	de fa&#231;on &#224; ce qu'il n'utilise pas la s&#233;curit&#233;, sinon une r&#233;ponse HTTP 401
-                	sera renvoy&#233;e.
+                	dans le Back-Office. Ses formulaires n'envoient aucune signature : ils ne fonctionnent donc que
+                	tant que la s&#233;curit&#233; REST est d&#233;sactiv&#233;e. Avec
+                	<em>rest.security.activated=true</em>, chacun re&#231;oit un HTTP 401, et la page ne sert plus
+                	qu'&#224; lire le WADL et &#224; construire des URL &#224; la main.
                 </p>
             </subsection>
             <subsection name="Syntaxe des URLs">

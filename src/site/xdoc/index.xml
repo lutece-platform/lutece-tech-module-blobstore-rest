@@ -12,34 +12,52 @@
             </subsection>
             <subsection name="Installation">
         	<p>
-        		Configure the private keys for the signature in the file <strong>blobstore-rest.xml</strong> :     
+        		The module checks a signature on its own endpoints. Set the private key in
+        		<strong>webapp/WEB-INF/conf/plugins/blobstore-rest.properties</strong> :
 			</p>
 			<div class="source">
 <pre>
-&lt;filters&gt;
-	&lt;filter&gt;
-		&lt;filter-name&gt;CRMRestSecurity&lt;/filter-name&gt;
-		&lt;url-pattern&gt;/rest/blobstore/*&lt;/url-pattern&gt;
-		&lt;filter-class&gt;fr.paris.lutece.util.signrequest.servlet.HeaderHashRequestFilter&lt;/filter-class&gt;
-
-		&lt;init-param&gt;
-			&lt;param-name&gt;elementsSignature&lt;/param-name&gt;
-			&lt;param-value&gt;blob_key&lt;/param-value&gt;
-		&lt;/init-param&gt;
-
-		&lt;init-param&gt;
-			&lt;param-name&gt;validityTimePeriod&lt;/param-name&gt;
-			&lt;param-value&gt;0&lt;/param-value&gt;
-		&lt;/init-param&gt;
-
-		&lt;init-param&gt;
-			&lt;param-name&gt;privateKey&lt;/param-name&gt;
-			&lt;param-value&gt;<strong>change me</strong>&lt;/param-value&gt;
-		&lt;/init-param&gt;
-	&lt;/filter&gt;
-&lt;/filters&gt;
+blobstore-rest.requestAuthenticator.name=signrequest.HeaderHashAuthenticator
+blobstore-rest.requestAuthenticator.cfg.hashService=signrequest.Sha1HashService
+blobstore-rest.requestAuthenticator.cfg.signatureElements=blob_key,blobstore
+blobstore-rest.requestAuthenticator.cfg.privateKey=<strong>change me</strong>
 </pre>
 			</div>
+        	<p>
+        		A client signs a call with two headers :
+			</p>
+			<div class="source">
+<pre>
+Lutece-Request-Timestamp: &lt;epoch in milliseconds&gt;
+Lutece-Request-Signature: sha1( &lt;value of blob_key&gt; + &lt;value of blobstore&gt; + &lt;private key&gt; + &lt;timestamp&gt; )
+</pre>
+			</div>
+        	<p>
+        		The signature is lowercase hexadecimal. It concatenates the <strong>values</strong> of the request
+        		parameters named by signatureElements, in that order, then the private key, then the timestamp.
+			</p>
+        	<p>
+        		Only values sent as <strong>query-string or form parameters</strong> count : path segments do not,
+        		and a parameter absent from the request is left out of the concatenation. So
+        		GET /rest/blobstore/{blobstore}/{blob_key} has to repeat both as query parameters,
+        		?blobstore=&lt;store&gt;&amp;blob_key=&lt;key&gt;, for the signature to bind to the file. Without them,
+        		and for /wadl, it reduces to sha1( &lt;private key&gt; + &lt;timestamp&gt; ).
+			</p>
+        	<p>
+        		On a multipart/form-data POST, only values sent in the <strong>query string</strong> count toward the
+        		signature ; a value sent only as a part never does. Send it in the query string,
+        		POST /rest/blobstore/create?blobstore=&lt;store&gt;, which is what plugin-blobstoreclient does.
+			</p>
+        	<p>
+        		The check can be turned off with blobstore-rest.security.activated=false in the same file, which
+        		serves <strong>every</strong> call unchecked, the create and delete write endpoints included. It
+        		exists so the test JSP can be driven locally ; leave it on otherwise.
+			</p>
+        	<p>
+        		Independently of this, plugin-rest offers a site-wide check, rest.security.activated in
+        		<strong>rest.properties</strong>, shipped off. It covers <strong>every</strong> REST resource of the
+        		site, not only /rest/blobstore.
+			</p>
             </subsection>
 
             <subsection name="Usage - Test JSP">
@@ -51,9 +69,10 @@
                 	<strong>jsp/admin/plugins/blobstore/modules/rest/TestBlobStoreRest.jsp</strong>
                 </p>
                 <p>
-                	<strong>Note : </strong>To access to this JSP, one must be authenticated in the 
-                	Back-Office. The filter tags must also be commented in the file blobstore-rest.xml
-                	so the module won't use the security, otherwise, an HTTP 401 response will be returned.
+                	<strong>Note : </strong>To reach this JSP, one must be authenticated in the Back-Office.
+                	Its forms send no signature, so they work only while REST security is off. With
+                	<em>rest.security.activated=true</em> every one of them is answered an HTTP 401, and the page
+                	is then good for reading the WADL and building urls by hand.
                 </p>
             </subsection>
             <subsection name="URLs syntax">
