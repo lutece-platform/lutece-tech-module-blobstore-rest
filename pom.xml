@@ -2,13 +2,13 @@
     <parent>
         <artifactId>lutece-global-pom</artifactId>
         <groupId>fr.paris.lutece.tools</groupId>
-        <version>7.0.2</version>
+        <version>8.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.paris.lutece.plugins</groupId>
     <artifactId>module-blobstore-rest</artifactId>
     <packaging>lutece-plugin</packaging>
-    <version>2.0.2-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <name>Lutece blobstore rest module</name>
     <repositories>
         <repository>
@@ -32,20 +32,25 @@
         <dependency>
             <groupId>fr.paris.lutece.plugins</groupId>
             <artifactId>plugin-blobstore</artifactId>
-            <version>[2.0.0-SNAPSHOT,2.9.9)</version>
+            <version>[3.0.0-SNAPSHOT,)</version>
             <type>lutece-plugin</type>
         </dependency>
         <dependency>
             <groupId>fr.paris.lutece.plugins</groupId>
             <artifactId>plugin-rest</artifactId>
-            <version>[1.0.0,3.9.9)</version>
+            <version>[4.0.0,)</version>
             <type>lutece-plugin</type>
+        </dependency>
+        <!-- BlobStoreRestAuthenticatorProducer extends AbstractSignRequestAuthenticatorProducer. -->
+        <dependency>
+            <groupId>fr.paris.lutece.plugins</groupId>
+            <artifactId>library-signrequest</artifactId>
+            <version>[4.0.0,)</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
     <properties>
         <componentName>blobstore-rest</componentName>
-        <jiraProjectName>BLOBSTOREREST</jiraProjectName>
-        <jiraComponentId>10592</jiraComponentId>
     </properties>
     <scm>
         <connection>scm:git:https://github.com/lutece-platform/lutece-tech-module-blobstore-rest.git</connection>

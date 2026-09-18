@@ -33,36 +33,38 @@
  */
 package fr.paris.lutece.plugins.blobstore.modules.rest.rs;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import jakarta.enterprise.inject.AmbiguousResolutionException;
+import jakarta.enterprise.inject.UnsatisfiedResolutionException;
+import jakarta.enterprise.inject.literal.NamedLiteral;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.EntityPart;
+import jakarta.ws.rs.core.MediaType;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.CannotLoadBeanClassException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.lang3.StringUtils;
 
-import com.sun.jersey.core.header.FormDataContentDisposition;
-
+import fr.paris.lutece.plugins.blobstore.modules.rest.filter.BlobStoreRestAuthentication;
 import fr.paris.lutece.plugins.blobstore.modules.rest.util.constants.BlobStoreRestConstants;
 import fr.paris.lutece.plugins.blobstore.service.BlobStoreFileItem;
 import fr.paris.lutece.plugins.blobstore.service.BlobStorePlugin;
 import fr.paris.lutece.plugins.blobstore.service.IBlobStoreService;
 import fr.paris.lutece.plugins.blobstore.service.NoSuchBlobException;
 import fr.paris.lutece.plugins.rest.service.RestConstants;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
@@ -74,6 +76,7 @@ import fr.paris.lutece.util.html.HtmlTemplate;
  * 
  */
 @Path( RestConstants.BASE_PATH + BlobStorePlugin.PLUGIN_NAME )
+@BlobStoreRestAuthentication
 public class BlobStoreRest
 {
     /**
@@ -95,7 +98,7 @@ public class BlobStoreRest
             sbBase.deleteCharAt( sbBase.length( ) - 1 );
         }
 
-        sbBase.append( RestConstants.BASE_PATH + BlobStorePlugin.PLUGIN_NAME );
+        sbBase.append( RestConstants.APP_PATH + BlobStorePlugin.PLUGIN_NAME );
 
         Map<String, Object> model = new HashMap<String, Object>( );
         model.put( BlobStoreRestConstants.MARK_BASE_URL, sbBase.toString( ) );
@@ -124,24 +127,11 @@ public class BlobStoreRest
 
         if ( StringUtils.isNotBlank( strBlobStore ) && StringUtils.isNotBlank( strBlobKey ) )
         {
-            IBlobStoreService blobStoreService;
+            IBlobStoreService blobStoreService = getBlobStoreService( strBlobStore );
 
-            try
+            if ( blobStoreService != null )
             {
-                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME, strBlobStore );
                 strDownloadUrl = blobStoreService.getFileUrl( strBlobKey );
-            }
-            catch( BeanDefinitionStoreException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
-            }
-            catch( NoSuchBeanDefinitionException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
-            }
-            catch( CannotLoadBeanClassException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
             }
         }
         else
@@ -174,30 +164,19 @@ public class BlobStoreRest
         {
             strResponse = strBlobKey;
 
-            IBlobStoreService blobStoreService;
+            IBlobStoreService blobStoreService = getBlobStoreService( strBlobStore );
 
-            try
+            if ( blobStoreService != null )
             {
-                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME, strBlobStore );
-
-                BlobStoreFileItem fileItem = new BlobStoreFileItem( strBlobKey, blobStoreService );
-                fileItem.delete( );
-            }
-            catch( BeanDefinitionStoreException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
-            }
-            catch( NoSuchBeanDefinitionException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
-            }
-            catch( CannotLoadBeanClassException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
-            }
-            catch( NoSuchBlobException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
+                try
+                {
+                    BlobStoreFileItem fileItem = new BlobStoreFileItem( strBlobKey, blobStoreService );
+                    fileItem.delete( );
+                }
+                catch( NoSuchBlobException e )
+                {
+                    AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE, e );
+                }
             }
         }
         else
@@ -211,56 +190,44 @@ public class BlobStoreRest
     /**
      * Create a blob
      * 
-     * @param strBlobStore
-     *            the the blobstore service
-     * @param blob
-     *            the blob to create
-     * @param blobDetail
-     *            the blob detail
+     * @param strBlobStoreFromUrl
+     *            the blobstore service name, read from the query string
+     * @param listParts
+     *            the parts of the multipart body, holding the blob and the blobstore service name
      * @return the id of the newly created blob
      */
     @POST
     @Path( BlobStoreRestConstants.PATH_CREATE_BLOBSTORE )
     @Consumes( MediaType.MULTIPART_FORM_DATA )
-    public String doCreateBlobStore( @FormParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE ) String strBlobStore,
-            @FormParam( BlobStoreRestConstants.PARAMETER_BLOB ) InputStream blob,
-            @FormParam( BlobStoreRestConstants.PARAMETER_BLOB ) FormDataContentDisposition blobDetail )
+    public String doCreateBlobStore( @QueryParam( BlobStoreRestConstants.PARAMETER_BLOBSTORE ) String strBlobStoreFromUrl,
+            List<EntityPart> listParts )
     {
         String strBlobKey = StringUtils.EMPTY;
+        EntityPart blob = getPart( listParts, BlobStoreRestConstants.PARAMETER_BLOB );
+        String strBlobStore = StringUtils.isNotBlank( strBlobStoreFromUrl ) ? strBlobStoreFromUrl
+                : getPartText( listParts, BlobStoreRestConstants.PARAMETER_BLOBSTORE );
 
         if ( StringUtils.isNotBlank( strBlobStore ) && ( blob != null ) )
         {
-            IBlobStoreService blobStoreService;
+            IBlobStoreService blobStoreService = getBlobStoreService( strBlobStore );
 
-            try
+            if ( blobStoreService != null )
             {
-                blobStoreService = (IBlobStoreService) SpringContextService.getPluginBean( BlobStorePlugin.PLUGIN_NAME, strBlobStore );
-                strBlobKey = blobStoreService.storeInputStream( blob );
-
-                String strJSON = BlobStoreFileItem.buildFileMetadata( blobDetail.getFileName( ), blobDetail.getSize( ), strBlobKey, blobDetail.getType( ) );
-
-                if ( AppLogService.isDebugEnabled( ) )
+                try ( BoundedInputStream content = BoundedInputStream.builder( ).setInputStream( blob.getContent( ) ).get( ) )
                 {
-                    AppLogService.debug( "Storing " + blobDetail.getName( ) + " with : " + strJSON );
-                }
+                    strBlobKey = blobStoreService.storeInputStream( content );
 
-                strBlobKey = blobStoreService.store( strJSON.getBytes( ) );
-            }
-            catch( BeanDefinitionStoreException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
-            }
-            catch( NoSuchBeanDefinitionException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
-            }
-            catch( CannotLoadBeanClassException e )
-            {
-                AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
-            }
-            finally
-            {
-                IOUtils.closeQuietly( blob );
+                    String strJSON = BlobStoreFileItem.buildFileMetadata( blob.getFileName( ).orElse( blob.getName( ) ), content.getCount( ), strBlobKey,
+                            blob.getMediaType( ).toString( ) );
+
+                    AppLogService.debug( "Storing {} with : {}", blob.getName( ), strJSON );
+
+                    strBlobKey = blobStoreService.store( strJSON.getBytes( ) );
+                }
+                catch( IOException e )
+                {
+                    AppLogService.error( e.getMessage( ), e );
+                }
             }
         }
         else
@@ -269,5 +236,82 @@ public class BlobStoreRest
         }
 
         return strBlobKey;
+    }
+
+    /**
+     * Gets the blob store service carrying a name.
+     * 
+     * @param strBlobStore
+     *            the blob store name, read from the request
+     * @return the blob store service, or <code>null</code> when no single service carries that name
+     */
+    private IBlobStoreService getBlobStoreService( String strBlobStore )
+    {
+        if ( StringUtils.isBlank( strBlobStore ) )
+        {
+            AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE );
+
+            return null;
+        }
+
+        try
+        {
+            return CDI.current( ).select( IBlobStoreService.class, NamedLiteral.of( strBlobStore ) ).get( );
+        }
+        catch( AmbiguousResolutionException | UnsatisfiedResolutionException e )
+        {
+            AppLogService.error( BlobStoreRestConstants.MESSAGE_NO_SUCH_BLOBSTORE, e );
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a part of a multipart body by its name.
+     * 
+     * @param listParts
+     *            the parts of the body
+     * @param strName
+     *            the part name
+     * @return the part, or <code>null</code> when the body carries no part of that name
+     */
+    private EntityPart getPart( List<EntityPart> listParts, String strName )
+    {
+        if ( listParts == null )
+        {
+            return null;
+        }
+
+        return listParts.stream( ).filter( part -> strName.equals( part.getName( ) ) ).findFirst( ).orElse( null );
+    }
+
+    /**
+     * Reads a part of a multipart body as text.
+     * 
+     * @param listParts
+     *            the parts of the body
+     * @param strName
+     *            the part name
+     * @return the part content, or an empty string when the body carries no part of that name
+     */
+    private String getPartText( List<EntityPart> listParts, String strName )
+    {
+        EntityPart part = getPart( listParts, strName );
+
+        if ( part == null )
+        {
+            return StringUtils.EMPTY;
+        }
+
+        try
+        {
+            return part.getContent( String.class );
+        }
+        catch( IOException e )
+        {
+            AppLogService.error( e.getMessage( ), e );
+
+            return StringUtils.EMPTY;
+        }
     }
 }

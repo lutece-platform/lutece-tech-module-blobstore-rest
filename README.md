@@ -11,34 +11,35 @@ This module handles file data, in WebService REST, of the plugin BlobStore
 
 ## Installation
 
-Configure the private keys for the signature in the file **blobstore-rest.xml** :
+The module checks a signature on its own endpoints. Set the private key in **webapp/WEB-INF/conf/plugins/blobstore-rest.properties** :
 
 ```
 
-<filters>
-	<filter>
-		<filter-name>CRMRestSecurity</filter-name>
-		<url-pattern>/rest/blobstore/*</url-pattern>
-		<filter-class>fr.paris.lutece.util.signrequest.servlet.HeaderHashRequestFilter</filter-class>
-
-		<init-param>
-			<param-name>elementsSignature</param-name>
-			<param-value>blob_key</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>validityTimePeriod</param-name>
-			<param-value>0</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>privateKey</param-name>
-			<param-value> **change me** </param-value>
-		</init-param>
-	</filter>
-</filters>
+blobstore-rest.requestAuthenticator.name=signrequest.HeaderHashAuthenticator
+blobstore-rest.requestAuthenticator.cfg.hashService=signrequest.Sha1HashService
+blobstore-rest.requestAuthenticator.cfg.signatureElements=blob_key,blobstore
+blobstore-rest.requestAuthenticator.cfg.privateKey= **change me** 
 
 ```
+
+A client signs a call with two headers :
+
+```
+
+Lutece-Request-Timestamp: <epoch in milliseconds>
+Lutece-Request-Signature: sha1( <value of blob_key> + <value of blobstore> + <private key> + <timestamp> )
+
+```
+
+The signature is lowercase hexadecimal. It concatenates the **values** of the request parameters named by `signatureElements`, in that order, then the private key, then the timestamp.
+
+Only values sent as **query-string or form parameters** count: path segments do not, and a parameter absent from the request is left out of the concatenation. So `GET /rest/blobstore/{blobstore}/{blob_key}` has to repeat both as query parameters — `?blobstore=<store>&blob_key=<key>` — for the signature to bind to the file. Without them, and for `/wadl`, it reduces to `sha1( <private key> + <timestamp> )`.
+
+On a `multipart/form-data` POST, only values sent in the **query string** count toward the signature; a value sent only as a part never does. Send it in the query string — `POST /rest/blobstore/create?blobstore=<store>` — which is what plugin-blobstoreclient does.
+
+The check can be turned off with `blobstore-rest.security.activated=false` in the same file, which serves **every** call unchecked, the `create` and `delete` write endpoints included. It exists so the test JSP can be driven locally; leave it on otherwise.
+
+Independently of this, plugin-rest offers a site-wide check, `rest.security.activated` in **rest.properties**, shipped off. It covers **every** REST resource of the site, not only `/rest/blobstore`.
 
 ## Usage - Test JSP
 
@@ -46,7 +47,7 @@ There is a JSP that allow to run test on the module-blobstore-rest. It is access
 
  **jsp/admin/plugins/blobstore/modules/rest/TestBlobStoreRest.jsp** 
 
- **Note :** To access to this JSP, one must be authenticated in the Back-Office. The filter tags must also be commented in the file blobstore-rest.xmlso the module won't use the security, otherwise, an HTTP 401 response will be returned.
+ **Note :** To reach this JSP, one must be authenticated in the Back-Office. Its forms send no signature, so they work only while REST security is off. With *rest.security.activated=true* every one of them is answered an HTTP 401, and the page is then good for reading the WADL and building urls by hand.
 
 ## URLs syntax
 Creation of a blob

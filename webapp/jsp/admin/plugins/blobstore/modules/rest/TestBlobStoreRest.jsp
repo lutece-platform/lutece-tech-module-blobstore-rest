@@ -3,8 +3,8 @@
 <html>
     <head>
         <title>BlobStore - REST webservices test page</title>
-        <base href="<%= AppPathService.getBaseUrl( request ) %>" />
-        <link rel="stylesheet" type="text/css" href="css/portal_admin.css" title="lutece_admin" />
+        <base href="${ AppPathService.getBaseUrl( pageContext.request ) }" />
+        <link rel="stylesheet" type="text/css" href="themes/admin/tabler/css/portal_admin_site.min.css" title="lutece_admin" />
         <script type="text/javascript">
             function onFileUrlView(  ) {
                 var blobKey = document.formGetFileUrl.blob_key.value;
