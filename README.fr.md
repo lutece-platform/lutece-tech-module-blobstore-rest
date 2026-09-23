@@ -46,7 +46,7 @@ Il existe une JSP permettant de faire des tests sur le module-blobstore-rest. El
 
  **jsp/admin/plugins/blobstore/modules/rest/TestBlobStoreRest.jsp** 
 
- **Note :** Pour accéder à cette JSP, il faut être authentifié dans le Back-Office. Ses formulaires n'envoient aucune signature : ils ne fonctionnent donc que tant que la sécurité REST est désactivée. Avec *rest.security.activated=true*, chacun reçoit un HTTP 401, et la page ne sert plus qu'à lire le WADL et à construire des URL à la main.
+ **Note :** La page demande le droit *BLOBSTORE_REST_TEST* (menu Système). Ses formulaires appellent les ressources et affichent la réponse, mais un navigateur n'envoie aucune signature : chaque appel reçoit un HTTP 401 tant que *blobstore-rest.security.activated* vaut true (la valeur par défaut).
 
 ## Syntaxe des URLs
 Création d'un blob

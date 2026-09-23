@@ -18,4 +18,16 @@
     </core-version-dependency>
     <db-pool-required>0</db-pool-required>
 
+    <admin-features>
+        <admin-feature>
+            <feature-id>BLOBSTORE_REST_TEST</feature-id>
+            <feature-title>module.blobstore.rest.adminFeature.testBlobStoreRest.name</feature-title>
+            <feature-description>module.blobstore.rest.adminFeature.testBlobStoreRest.description</feature-description>
+            <feature-level>0</feature-level>
+            <feature-url>jsp/admin/plugins/blobstore/modules/rest/TestBlobStoreRest.jsp</feature-url>
+            <icon-url>ti ti-api</icon-url>
+            <feature-group>SYSTEM</feature-group>
+        </admin-feature>
+    </admin-features>
+
 </plug-in>
