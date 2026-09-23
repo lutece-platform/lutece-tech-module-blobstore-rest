@@ -69,10 +69,9 @@ Lutece-Request-Signature: sha1( &lt;value of blob_key&gt; + &lt;value of blobsto
                 	<strong>jsp/admin/plugins/blobstore/modules/rest/TestBlobStoreRest.jsp</strong>
                 </p>
                 <p>
-                	<strong>Note : </strong>To reach this JSP, one must be authenticated in the Back-Office.
-                	Its forms send no signature, so they work only while REST security is off. With
-                	<em>rest.security.activated=true</em> every one of them is answered an HTTP 401, and the page
-                	is then good for reading the WADL and building urls by hand.
+                	<strong>Note : </strong>The page needs the right <em>BLOBSTORE_REST_TEST</em> (menu System). Its forms call
+                	the resources and show the answer, but a browser sends no signature: every call is answered an HTTP 401
+                	while <em>blobstore-rest.security.activated</em> is true (the default).
                 </p>
             </subsection>
             <subsection name="URLs syntax">

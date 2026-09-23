@@ -1,0 +1,70 @@
+<#assign restForms = [
+	{ 'id': 'wadl', 'path': 'rest/blobstore/wadl', 'method': 'get', 'accept': 'application/xml', 'multipart': false, 'fields': [] },
+	{ 'id': 'fileUrl', 'path': 'rest/blobstore/{blobstore}/{blob_key}', 'method': 'get', 'accept': 'text/plain', 'multipart': false, 'fields': [ { 'name': 'blobstore', 'type': 'text' }, { 'name': 'blob_key', 'type': 'text' } ] },
+	{ 'id': 'create', 'path': 'rest/blobstore/create', 'method': 'post', 'accept': '*/*', 'multipart': true, 'fields': [ { 'name': 'blobstore', 'type': 'text' }, { 'name': 'blob', 'type': 'file' } ] },
+	{ 'id': 'delete', 'path': 'rest/blobstore/delete', 'method': 'post', 'accept': '*/*', 'multipart': false, 'fields': [ { 'name': 'blobstore', 'type': 'text' }, { 'name': 'blob_key', 'type': 'text' } ] }
+] />
+<@pageContainer>
+	<@pageColumn>
+		<@pageHeader title='#i18n{module.blobstore.rest.test_blobstore_rest.pageTitle}' description='#i18n{module.blobstore.rest.test_blobstore_rest.description}' />
+		<@row>
+			<#list restForms as restForm>
+			<@columns md=6>
+				<@box>
+					<@boxHeader title='#i18n{module.blobstore.rest.test_blobstore_rest.${restForm.id}.title}' />
+					<@boxBody>
+						<@tform name='form_${restForm.id}' id='form_${restForm.id}' action='${restForm.path}' method=restForm.method enctype=restForm.multipart?then('multipart/form-data','') params='data-rest-form="${restForm.method}" data-rest-accept="${restForm.accept}"'>
+							<#list restForm.fields as field>
+							<@formGroup labelFor='${restForm.id}_${field.name}' labelKey='#i18n{module.blobstore.rest.test_blobstore_rest.label.${field.name}}' mandatory=true rows=2>
+								<@input type=field.type name=field.name id='${restForm.id}_${field.name}' mandatory=true params='data-rest-param' />
+							</@formGroup>
+							</#list>
+							<@formGroup rows=2>
+								<@button type='submit' buttonIcon='send' title='#i18n{module.blobstore.rest.test_blobstore_rest.buttonCall}' color='primary' />
+							</@formGroup>
+						</@tform>
+					</@boxBody>
+				</@box>
+			</@columns>
+			</#list>
+		</@row>
+		<@box>
+			<@boxHeader title='#i18n{module.blobstore.rest.test_blobstore_rest.result.title}' />
+			<@boxBody>
+				<pre id='rest_result' class='mb-0' aria-live='polite'>#i18n{module.blobstore.rest.test_blobstore_rest.result.empty}</pre>
+			</@boxBody>
+		</@box>
+	</@pageColumn>
+</@pageContainer>
+<script>
+document.querySelectorAll( 'form[data-rest-form]' ).forEach( function( form ) {
+	form.addEventListener( 'submit', function( event ) {
+		event.preventDefault( );
+		var method = form.dataset.restForm.toUpperCase( );
+		var multipart = form.getAttribute( 'enctype' ) === 'multipart/form-data';
+		var url = form.getAttribute( 'action' );
+		var body = multipart ? new FormData( ) : new URLSearchParams( );
+		form.querySelectorAll( '[data-rest-param]' ).forEach( function( param ) {
+			url = url.replace( '{' + param.name + '}', encodeURIComponent( param.value ) );
+			body.append( param.name, param.type === 'file' ? param.files[ 0 ] : param.value );
+		} );
+		var options = { method: method, headers: { 'Accept': form.dataset.restAccept } };
+		if ( method === 'POST' ) {
+			if ( !multipart ) {
+				options.headers[ 'Content-Type' ] = 'application/x-www-form-urlencoded';
+			}
+			options.body = multipart ? body : body.toString( );
+		}
+		var result = document.getElementById( 'rest_result' );
+		fetch( url, options )
+			.then( function( response ) {
+				return response.text( ).then( function( text ) {
+					result.textContent = method + ' ' + url + '\nHTTP ' + response.status + '\n\n' + text;
+				} );
+			} )
+			.catch( function( error ) {
+				result.textContent = method + ' ' + url + '\n' + error;
+			} );
+	} );
+} );
+</script>

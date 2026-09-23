@@ -47,7 +47,7 @@ There is a JSP that allow to run test on the module-blobstore-rest. It is access
 
  **jsp/admin/plugins/blobstore/modules/rest/TestBlobStoreRest.jsp** 
 
- **Note :** To reach this JSP, one must be authenticated in the Back-Office. Its forms send no signature, so they work only while REST security is off. With *rest.security.activated=true* every one of them is answered an HTTP 401, and the page is then good for reading the WADL and building urls by hand.
+ **Note :** The page needs the right *BLOBSTORE_REST_TEST* (menu System). Its forms call the resources and show the answer, but a browser sends no signature: every call is answered an HTTP 401 while *blobstore-rest.security.activated* is true (the default).
 
 ## URLs syntax
 Creation of a blob
